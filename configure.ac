@@ -303,6 +303,35 @@ bool timer_delete_sync(struct timer_list *timer) { return true; }
 	AC_DEFINE([WACOM_TIMER_DELETE_SYNC], [], [kernel defines timer_delete_sync from v6.1.84+])
 ])
 
+
+dnl Check if hid_report_raw_event takes a bufsize parameter or not.
+dnl This is the case in Linux 7.0.8 and later.
+AC_MSG_CHECKING(hid_report_raw_event bufsize parameter)
+WACOM_LINUX_TRY_COMPILE([
+#include <linux/hid.h>
+static int (*test_fn)(
+        struct hid_device *,
+        enum hid_report_type,
+        u8 *,
+        size_t,
+        u32,
+        int
+) = hid_report_raw_event;
+int test(void)
+{
+        return test_fn != NULL;
+}
+],[
+],[
+        HAVE_HID_REPORT_RAW_EVENT_BUFSIZE=yes
+        AC_MSG_RESULT([yes])
+        AC_DEFINE([WACOM_HID_REPORT_RAW_EVENT_BUFSIZE], [],
+                  [kernel hid_report_raw_event() takes a bufsize parameter])
+],[
+        HAVE_HID_REPORT_RAW_EVENT_BUFSIZE=no
+        AC_MSG_RESULT([no])
+])
+
 dnl Check if from_timer has been renamed to timer_container_of or
 dnl not. This is the case in Linux 6.16 and later.
 AC_MSG_CHECKING(timer_container_of)

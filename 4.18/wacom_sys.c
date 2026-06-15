@@ -96,7 +96,11 @@ static void wacom_wac_queue_flush(struct hid_device *hdev,
 			kfree(buf);
 			continue;
 		}
+#ifdef WACOM_HID_REPORT_RAW_EVENT_BUFSIZE
+		err = hid_report_raw_event(hdev, HID_INPUT_REPORT, buf, size, size, false);
+#else
 		err = hid_report_raw_event(hdev, HID_INPUT_REPORT, buf, size, false);
+#endif
 		if (err) {
 			hid_warn(hdev, "%s: unable to flush event due to error %d\n",
 				 __func__, err);
@@ -339,8 +343,13 @@ static void wacom_feature_mapping(struct hid_device *hdev,
 			ret = wacom_get_report(hdev, HID_FEATURE_REPORT,
 					       data, n, WAC_CMD_RETRIES);
 			if (ret == n && features->type == HID_GENERIC) {
+#ifdef WACOM_HID_REPORT_RAW_EVENT_BUFSIZE
+				ret = hid_report_raw_event(hdev,
+					HID_FEATURE_REPORT, data, n, n, 0);
+#else
 				ret = hid_report_raw_event(hdev,
 					HID_FEATURE_REPORT, data, n, 0);
+#endif
 			} else if (ret == 2 && features->type != HID_GENERIC) {
 				features->touch_max = data[1];
 			} else {
@@ -400,8 +409,13 @@ static void wacom_feature_mapping(struct hid_device *hdev,
 		ret = wacom_get_report(hdev, HID_FEATURE_REPORT,
 					data, n, WAC_CMD_RETRIES);
 		if (ret == n) {
+#ifdef WACOM_HID_REPORT_RAW_EVENT_BUFSIZE
+			ret = hid_report_raw_event(hdev, HID_FEATURE_REPORT,
+						   data, n, n, 0);
+#else
 			ret = hid_report_raw_event(hdev, HID_FEATURE_REPORT,
 						   data, n, 0);
+#endif
 		} else {
 			hid_warn(hdev, "%s: could not retrieve sensor offsets\n",
 				 __func__);
