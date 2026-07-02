@@ -934,7 +934,11 @@ static int wacom_add_shared_data(struct hid_device *hdev)
 
 	data = wacom_get_hdev_data(hdev);
 	if (!data) {
+#ifdef WACOM_KZALLOC_OBJ
 		data = kzalloc_obj(struct wacom_hdev_data);
+#else
+		data = kzalloc(sizeof(struct wacom_hdev_data), GFP_KERNEL);
+#endif
 		if (!data) {
 			mutex_unlock(&wacom_udev_list_lock);
 			return -ENOMEM;

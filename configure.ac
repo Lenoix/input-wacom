@@ -368,6 +368,23 @@ WACOM_LINUX_TRY_COMPILE([
 	AC_MSG_RESULT([no])
 ])
 
+dnl Check if kzalloc_obj exists
+AC_MSG_CHECKING(kzalloc_obj)
+WACOM_LINUX_TRY_COMPILE([
+#include <linux/slab.h>
+#ifndef kzalloc_obj
+#error "kzalloc_obj is not defined"
+#endif
+],[
+],[
+	HAVE_KZALLOC_OBJ=yes
+	AC_MSG_RESULT([yes])
+	AC_DEFINE([WACOM_KZALLOC_OBJ], [], [kernel defines kzalloc_obj from v7.0])
+],[
+	HAVE_KZALLOC_OBJ=no
+	AC_MSG_RESULT([no])
+])
+
 dnl Check which version of the driver we should compile
 AC_DEFUN([WCM_EXPLODE], [$(echo "$1" | awk '{split($[0],x,"[[^0-9]]"); printf("%03d%03d%03d\n",x[[1]],x[[2]],x[[3]]);}')])
 EXPLODED_VER="WCM_EXPLODE($MODUTS)"
