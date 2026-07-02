@@ -44,7 +44,7 @@ jobs:
           gcc -print-file-name=plugin
 
       - name: Checkout the repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Download and extract v${{ matrix.kernel }} kernel
         run: |
@@ -97,7 +97,7 @@ jobs:
 
       - name: Save build directory as artifact
         if: '!cancelled()'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: input-wacom-${{ matrix.kernel }}
           retention-days: 7
