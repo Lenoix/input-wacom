@@ -375,6 +375,7 @@ static int w8001_command(struct w8001 *w8001, unsigned char command,
 	return rc;
 }
 
+#ifdef WACOM_SCOPED_GUARD
 static int w8001_open(struct input_dev *dev)
 {
 	struct w8001 *w8001 = input_get_drvdata(dev);
@@ -393,15 +394,42 @@ static int w8001_open(struct input_dev *dev)
 
 	return -EINTR;
 }
+#else
+static int w8001_open(struct input_dev *dev)
+{
+	struct w8001 *w8001 = input_get_drvdata(dev);
+	int err;
+
+	err = mutex_lock_interruptible(&w8001->mutex);
+	if (err)
+		return err;
+
+	if (w8001->open_count++ == 0) {
+		err = w8001_command(w8001, W8001_CMD_START, false);
+		if (err)
+			w8001->open_count--;
+	}
+
+	mutex_unlock(&w8001->mutex);
+	return err;
+}
+#endif
 
 static void w8001_close(struct input_dev *dev)
 {
 	struct w8001 *w8001 = input_get_drvdata(dev);
-
+#ifdef WACOM_GUARD
 	guard(mutex)(&w8001->mutex);
+#else
+	mutex_lock(&w8001->mutex);
+#endif
 
 	if (--w8001->open_count == 0)
 		w8001_command(w8001, W8001_CMD_STOP, false);
+#ifdef WACOM_GUARD
+#else
+	mutex_unlock(&w8001->mutex);
+#endif
 }
 
 static int w8001_detect(struct w8001 *w8001)
@@ -596,7 +624,11 @@ static int w8001_connect(struct serio *serio, struct serio_driver *drv)
 	char basename[64] = "Wacom Serial";
 	int err, err_pen, err_touch;
 
+#ifdef WACOM_KZALLOC_OBJ
 	w8001 = kzalloc_obj(*w8001);
+#else
+	w8001 = kzalloc(sizeof(*w8001), GFP_KERNEL);
+#endif
 	input_dev_pen = input_allocate_device();
 	input_dev_touch = input_allocate_device();
 	if (!w8001 || !input_dev_pen || !input_dev_touch) {

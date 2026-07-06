@@ -68,9 +68,13 @@ static void wacom_wac_queue_insert(struct hid_device *hdev,
 		kfifo_skip(fifo);
 	}
 
+#ifdef WACOM_HID_WARN_RATELIMITED
 	if (!kfifo_in(fifo, raw_data, size))
 		hid_warn_ratelimited(hdev, "%s: report is too large (%d)\n",
 				     __func__, size);
+#else
+	kfifo_in(fifo, raw_data, size);
+#endif
 }
 
 static void wacom_wac_queue_flush(struct hid_device *hdev,
@@ -78,9 +82,18 @@ static void wacom_wac_queue_flush(struct hid_device *hdev,
 {
 	while (!kfifo_is_empty(fifo)) {
 		int size = kfifo_peek_len(fifo);
+#ifdef WACOM_CLEANUP_FREE
 		u8 *buf __free(kfree) = kzalloc(size, GFP_ATOMIC);
+#else
+		u8 *buf;
+#endif
 		unsigned int count;
 		int err;
+
+#ifdef WACOM_CLEANUP_FREE
+#else
+		buf = kzalloc(size, GFP_ATOMIC);
+#endif
 
 		if (!buf) {
 			kfifo_skip(fifo);
@@ -92,8 +105,12 @@ static void wacom_wac_queue_flush(struct hid_device *hdev,
 			// Hard to say what is the "right" action in this
 			// circumstance. Skipping the entry and continuing
 			// to flush seems reasonable enough, however.
-			hid_warn(hdev, "%s: removed fifo entry with unexpected size\n",
-				 __func__);\
+		hid_warn(hdev, "%s: removed fifo entry with unexpected size\n",
+				 __func__);
+#ifdef WACOM_CLEANUP_FREE
+#else
+			kfree(buf);
+#endif
 			continue;
 		}
 #ifdef WACOM_HID_REPORT_RAW_EVENT_BUFSIZE
@@ -105,6 +122,10 @@ static void wacom_wac_queue_flush(struct hid_device *hdev,
 			hid_warn(hdev, "%s: unable to flush event due to error %d\n",
 				 __func__, err);
 		}
+#ifdef WACOM_CLEANUP_FREE
+#else
+		kfree(buf);
+#endif
 	}
 }
 

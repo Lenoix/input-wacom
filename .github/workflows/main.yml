@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        kernel: ["7.0", "6.12", "6.10", "6.3", "5.15", "5.10", "5.4", "5.0", "4.19"]
+        kernel: ["7.0", "6.17", "6.12", "6.10", "6.5", "6.3", "5.17", "5.15", "5.10", "5.4", "5.0", "4.19"]
         include:
           - kernel: "4.19"
             compile_cflags: -Wno-error=format-truncation -Wno-error=pointer-sign
@@ -24,13 +24,21 @@ jobs:
             compile_cflags: -Wno-error=format-truncation -Wno-error=pointer-sign
           - kernel: "5.15"
             compile_cflags: -Wno-error=format-truncation -Wno-error=pointer-sign
+          - kernel: "5.17"
+            compile_cflags: -Wno-error=format-truncation -Wno-error=pointer-sign
           - kernel: "6.3"
+            compile_cflags: -Wno-error=format-truncation -Wno-error=pointer-sign
+            build_makeflags: KBUILD_MODPOST_WARN=1
+          - kernel: "6.5"
             compile_cflags: -Wno-error=format-truncation -Wno-error=pointer-sign
             build_makeflags: KBUILD_MODPOST_WARN=1
           - kernel: "6.10"
             compile_cflags: -Wno-error=format-truncation -Wno-error=pointer-sign
             build_makeflags: KBUILD_MODPOST_WARN=1
           - kernel: "6.12"
+            compile_cflags: -Wno-error=format-truncation -Wno-error=pointer-sign
+            build_makeflags: KBUILD_MODPOST_WARN=1
+          - kernel: "6.17"
             compile_cflags: -Wno-error=format-truncation -Wno-error=pointer-sign
             build_makeflags: KBUILD_MODPOST_WARN=1
           - kernel: "7.0"

@@ -385,6 +385,91 @@ WACOM_LINUX_TRY_COMPILE([
 	AC_MSG_RESULT([no])
 ])
 
+dnl Check if hid_warn_ratelimited exists
+AC_MSG_CHECKING(hid_warn_ratelimited)
+WACOM_LINUX_TRY_COMPILE([
+#include <linux/hid.h>
+#ifndef hid_warn_ratelimited
+#error "hid_warn_ratelimited is not defined"
+#endif
+],[
+],[
+	HAVE_HID_WARN_RATELIMITED=yes
+	AC_MSG_RESULT([yes])
+	AC_DEFINE([WACOM_HID_WARN_RATELIMITED], [], [kernel defines hid_warn_ratelimited from v6.17])
+],[
+	HAVE_HID_WARN_RATELIMITED=no
+	AC_MSG_RESULT([no])
+])
+
+dnl Check if __free exists
+AC_MSG_CHECKING(__free)
+WACOM_LINUX_TRY_COMPILE([
+#include <linux/cleanup.h>
+#ifndef __free
+#error "__free is not defined"
+#endif
+],[
+],[
+	HAVE_CLEANUP_FREE=yes
+	AC_MSG_RESULT([yes])
+	AC_DEFINE([WACOM_CLEANUP_FREE], [], [kernel defines __free from v6.5])
+],[
+	HAVE_CLEANUP_FREE=no
+	AC_MSG_RESULT([no])
+])
+
+dnl Check if scoped_guard exists
+AC_MSG_CHECKING(scoped_guard)
+WACOM_LINUX_TRY_COMPILE([
+#include <linux/cleanup.h>
+#ifndef scoped_guard
+#error "scoped_guard is not defined"
+#endif
+],[
+],[
+	HAVE_SCOPED_GUARD=yes
+	AC_MSG_RESULT([yes])
+	AC_DEFINE([WACOM_SCOPED_GUARD], [], [kernel defines scoped_guard from v6.5])
+],[
+	HAVE_SCOPED_GUARD=no
+	AC_MSG_RESULT([no])
+])
+
+dnl Check if guard exists
+AC_MSG_CHECKING(guard)
+WACOM_LINUX_TRY_COMPILE([
+#include <linux/cleanup.h>
+#ifndef guard
+#error "guard is not defined"
+#endif
+],[
+],[
+	HAVE_GUARD=yes
+	AC_MSG_RESULT([yes])
+	AC_DEFINE([WACOM_GUARD], [], [kernel defines guard from v6.5])
+],[
+	HAVE_GUARD=no
+	AC_MSG_RESULT([no])
+])
+
+dnl Check if define_simple_dev_pm_ops exists
+AC_MSG_CHECKING(define_simple_dev_pm_ops)
+WACOM_LINUX_TRY_COMPILE([
+#include <linux/pm.h>
+#ifndef DEFINE_SIMPLE_DEV_PM_OPS
+#error "define_simple_dev_pm_ops is not defined"
+#endif
+],[
+],[
+	HAVE_DEFINE_SIMPLE_DEV_PM_OPS=yes
+	AC_MSG_RESULT([yes])
+	AC_DEFINE([WACOM_DEFINE_SIMPLE_DEV_PM_OPS], [], [kernel defines define_simple_dev_pm_ops from v5.17])
+],[
+	HAVE_DEFINE_SIMPLE_DEV_PM_OPS=no
+	AC_MSG_RESULT([no])
+])
+
 dnl Check which version of the driver we should compile
 AC_DEFUN([WCM_EXPLODE], [$(echo "$1" | awk '{split($[0],x,"[[^0-9]]"); printf("%03d%03d%03d\n",x[[1]],x[[2]],x[[3]]);}')])
 EXPLODED_VER="WCM_EXPLODE($MODUTS)"
