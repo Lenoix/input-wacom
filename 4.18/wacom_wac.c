@@ -1208,8 +1208,11 @@ static int int_dist(int x1, int y1, int x2, int y2)
 static void wacom_intuos_bt_process_data(struct wacom_wac *wacom,
 		unsigned char *data)
 {
-	memcpy(wacom->data, data, 10);
+	u8 *saved_data = wacom->data;
+
+	wacom->data = data;
 	wacom_intuos_irq(wacom);
+	wacom->data = saved_data;
 
 	input_sync(wacom->pen_input);
 	if (wacom->pad_input)
@@ -1218,7 +1221,7 @@ static void wacom_intuos_bt_process_data(struct wacom_wac *wacom,
 
 static int wacom_intuos_bt_irq(struct wacom_wac *wacom, size_t len)
 {
-	u8 *data = kmemdup(wacom->data, len, GFP_KERNEL);
+	u8 *data = wacom->data;
 	int i = 1;
 	unsigned power_raw, battery_capacity, bat_charging, ps_connected;
 
@@ -1258,7 +1261,6 @@ static int wacom_intuos_bt_irq(struct wacom_wac *wacom, size_t len)
 		break;
 	}
 
-	kfree(data);
 	return 0;
 }
 
